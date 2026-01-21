@@ -4,74 +4,160 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Room {{ room_id }}</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
     <style>
+      :root {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8fafc;
+        --bg-tertiary: #f1f5f9;
+        --text-primary: #0f172a;
+        --text-secondary: #334155;
+        --text-muted: #64748b;
+        --border-primary: #e2e8f0;
+        --brand-primary: #2563eb;
+        --shadow-color: rgba(15, 23, 42, 0.08);
+      }
+
+      .chat-shell {
+        height: calc(100vh - 2rem);
+      }
+
       #messages {
-        height: 55vh;
         overflow-y: auto;
-        background: #fff;
-        border: 1px solid #e5e5e5;
-        border-radius: 8px;
-        padding: 12px;
+        scroll-behavior: smooth;
       }
-      .msg {
-        margin-bottom: 10px;
+
+      .chat-bg {
+        background: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.10), transparent 45%),
+          radial-gradient(circle at 90% 0%, rgba(99, 102, 241, 0.10), transparent 40%),
+          linear-gradient(180deg, #f8fafc, #f1f5f9);
       }
-      .msg .meta {
-        font-size: 0.85rem;
-        color: #666;
+
+      .bubble {
+        border-radius: 1rem;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+        border: 1px solid rgba(226, 232, 240, 0.8);
       }
-      .msg .text {
+
+      .bubble .text {
         white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .minimal-input {
+        border-radius: 0.75rem;
+        border: 1px solid var(--border-primary);
+        background: var(--bg-primary);
+        outline: none;
+      }
+
+      .minimal-input:focus {
+        border-color: rgba(99, 102, 241, 0.65);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+      }
+
+      .minimal-btn {
+        border-radius: 0.75rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      }
+
+      .minimal-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px var(--shadow-color);
       }
     </style>
   </head>
-  <body class="bg-light">
-    <div class="container py-4" style="max-width: 900px">
-      <div class="d-flex align-items-center justify-content-between mb-3">
-        <div>
-          <h2 class="mb-0">Room</h2>
-          <div class="text-muted">{{ room_id }}</div>
-        </div>
-        <div class="text-end">
-          <div class="small text-muted">Share this URL</div>
-          <div class="input-group">
-            <input id="shareUrl" class="form-control" readonly />
-            <button id="copyBtn" class="btn btn-outline-secondary">Copy</button>
-          </div>
-        </div>
-      </div>
+  <body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
+    <div class="p-4 sm:p-6">
+      <div class="mx-auto max-w-5xl">
+        <div class="chat-shell grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-4">
+          <aside class="bg-white border border-slate-200 rounded-2xl shadow-[0_1px_3px_rgba(15,23,42,0.04)] overflow-hidden">
+            <div class="p-5 border-b border-slate-200">
+              <div class="flex items-center gap-3">
+                <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-[0_2px_8px_rgba(15,23,42,0.08)] flex items-center justify-center">
+                  <span class="iconify text-white" data-icon="solar:chat-round-bold" data-width="22"></span>
+                </div>
+                <div class="min-w-0">
+                  <div class="text-[12px] uppercase tracking-[0.2em] text-slate-500">Room</div>
+                  <div class="text-lg font-semibold text-slate-900 truncate">{{ room_id }}</div>
+                </div>
+              </div>
+            </div>
 
-      <div class="row g-3">
-        <div class="col-12 col-lg-8">
-          <div id="messages"></div>
-        </div>
-        <div class="col-12 col-lg-4">
-          <div class="card">
-            <div class="card-body">
-              <div class="mb-3">
-                <label class="form-label">Your name</label>
-                <input id="username" class="form-control" placeholder="e.g. Alex" />
+            <div class="p-5 space-y-4">
+              <div>
+                <div class="text-xs uppercase tracking-wider text-slate-500 mb-2">Your name</div>
+                <input id="username" class="minimal-input w-full px-4 py-3 text-sm" placeholder="e.g. Alex" />
               </div>
 
-              <div class="mb-3">
-                <label class="form-label">Message</label>
+              <div>
+                <div class="text-xs uppercase tracking-wider text-slate-500 mb-2">Share link</div>
+                <div class="flex gap-3">
+                  <input id="shareUrl" class="minimal-input w-full px-4 py-3 text-sm" readonly />
+                  <button
+                    id="copyBtn"
+                    class="minimal-btn shrink-0 inline-flex items-center justify-center gap-2 px-4 py-3 font-medium text-slate-700 bg-slate-100 border border-slate-200"
+                    type="button"
+                  >
+                    <span class="iconify" data-icon="solar:copy-bold" data-width="18"></span>
+                    Copy
+                  </button>
+                </div>
+              </div>
+
+              <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600">
+                <div class="flex items-center gap-2">
+                  <span class="iconify text-slate-500" data-icon="solar:info-circle-bold" data-width="16"></span>
+                  <span>Anyone with this link can join this room.</span>
+                </div>
+              </div>
+
+              <div id="status" class="text-xs text-slate-500">Connecting...</div>
+            </div>
+          </aside>
+
+          <section class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-[0_30px_80px_rgba(15,23,42,0.12),0_2px_10px_rgba(15,23,42,0.06)] flex flex-col">
+            <header class="px-5 py-4 border-b border-slate-200 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white">
+              <div class="flex items-center justify-between gap-4">
+                <div class="min-w-0">
+                  <div class="text-sm/5 opacity-90">Messaging room</div>
+                  <div class="font-semibold truncate">{{ room_id }}</div>
+                </div>
+                <a
+                  href="/"
+                  class="minimal-btn inline-flex items-center gap-2 px-3 py-2 text-sm font-medium bg-white/10 hover:bg-white/15 border border-white/20"
+                >
+                  <span class="iconify" data-icon="solar:home-angle-bold" data-width="18"></span>
+                  New room
+                </a>
+              </div>
+            </header>
+
+            <div class="chat-bg flex-1">
+              <div id="messages" class="h-full p-4 sm:p-5 space-y-3"></div>
+            </div>
+
+            <footer class="p-4 border-t border-slate-200 bg-white">
+              <div class="flex items-end gap-3">
                 <textarea
                   id="message"
-                  class="form-control"
-                  rows="4"
-                  placeholder="Type and press Send..."
+                  class="minimal-input w-full px-4 py-3 text-sm resize-none"
+                  rows="2"
+                  placeholder="Message"
                 ></textarea>
+                <button
+                  id="sendBtn"
+                  class="minimal-btn inline-flex items-center justify-center gap-2 px-4 py-3 font-medium text-white bg-gradient-to-r from-emerald-500 to-emerald-600"
+                  type="button"
+                >
+                  <span class="iconify" data-icon="solar:plain-2-bold" data-width="18"></span>
+                  Send
+                </button>
               </div>
-
-              <button id="sendBtn" class="btn btn-primary w-100">Send</button>
-
-              <div id="status" class="text-muted small mt-3">Connecting...</div>
-            </div>
-          </div>
+              <div class="mt-2 text-[11px] text-slate-500">Press Enter to send, Shift+Enter for a new line.</div>
+            </footer>
+          </section>
         </div>
       </div>
     </div>
@@ -86,24 +172,44 @@
       const shareUrlEl = document.getElementById('shareUrl');
       const copyBtn = document.getElementById('copyBtn');
 
+      let myUsername = 'Anonymous';
+
       shareUrlEl.value = window.location.href;
 
+      function syncUsername() {
+        myUsername = (usernameEl.value || 'Anonymous').trim() || 'Anonymous';
+      }
+
+      usernameEl.addEventListener('input', syncUsername);
+      syncUsername();
+
       function addMessage({ username, message, ts }) {
-        const wrap = document.createElement('div');
-        wrap.className = 'msg';
+        const sender = (username || 'Anonymous').trim() || 'Anonymous';
+        const isMine = sender === myUsername;
+
+        const row = document.createElement('div');
+        row.className = `flex ${isMine ? 'justify-end' : 'justify-start'}`;
+
+        const bubble = document.createElement('div');
+        bubble.className = `bubble max-w-[85%] sm:max-w-[70%] px-3.5 py-2.5 ${
+          isMine
+            ? 'bg-emerald-50 border-emerald-200'
+            : 'bg-white border-slate-200'
+        }`;
 
         const meta = document.createElement('div');
-        meta.className = 'meta';
-        const when = ts ? new Date(ts).toLocaleString() : '';
-        meta.textContent = `${username || 'Anonymous'}${when ? ' · ' + when : ''}`;
+        meta.className = `text-[11px] ${isMine ? 'text-emerald-700' : 'text-slate-500'} mb-1`;
+        const when = ts ? new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        meta.textContent = `${sender}${when ? ' · ' + when : ''}`;
 
         const text = document.createElement('div');
-        text.className = 'text';
+        text.className = 'text text-sm text-slate-800';
         text.textContent = message || '';
 
-        wrap.appendChild(meta);
-        wrap.appendChild(text);
-        messagesEl.appendChild(wrap);
+        bubble.appendChild(meta);
+        bubble.appendChild(text);
+        row.appendChild(bubble);
+        messagesEl.appendChild(row);
         messagesEl.scrollTop = messagesEl.scrollHeight;
       }
 
@@ -144,7 +250,8 @@
       }
 
       function sendMessage() {
-        const username = (usernameEl.value || 'Anonymous').trim() || 'Anonymous';
+        syncUsername();
+        const username = myUsername;
         const message = (messageEl.value || '').trim();
         if (!message) return;
 
