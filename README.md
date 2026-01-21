@@ -183,3 +183,47 @@ socket.on('update_web_app', function (data) {
 ## Screenshots
 - ![Example Image](https://i.ibb.co/CQ6YVLs/Screenshot-2024-04-16-181417.png)
 - ![Example Image](https://i.ibb.co/p27qWqH/Screenshot-2024-04-16-181457.png)
+
+## Install
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+## Run (Flask / SocketIO)
+
+Run the existing Flask app:
+
+```bash
+python app.py
+```
+
+Default URL patterns:
+
+- `http://localhost:8080/admin/<username>`
+- `http://localhost:8080/staff/<username>`
+- `http://localhost:8080/client/<username>`
+
+## FastAPI Rooms (Shareable URL chat)
+
+This repository also includes a separate FastAPI + WebSocket based room chat app under `fastapi_chat/`.
+
+### Features
+
+- Create a room and get a shareable URL
+- Anyone opening the URL can send/receive messages
+- Messages are broadcast to all connected users in the room
+
+### Run
+
+```bash
+python -m uvicorn fastapi_chat.main:app --host 0.0.0.0 --port 8090 --reload
+```
+
+Open:
+
+- `http://localhost:8090/`
+
+Create a room and share the generated room link.
