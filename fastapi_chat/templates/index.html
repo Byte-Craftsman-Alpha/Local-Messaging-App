@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Create Room</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-light">
+    <div class="container py-5" style="max-width: 720px">
+      <h1 class="mb-3">Messaging Rooms</h1>
+      <p class="text-muted mb-4">
+        Create a room, copy the share URL, and anyone opening it can chat in real time.
+      </p>
+
+      <div class="card">
+        <div class="card-body">
+          <button id="createBtn" class="btn btn-primary">Create room</button>
+
+          <div id="result" class="mt-4 d-none">
+            <div class="mb-2"><strong>Share URL</strong></div>
+            <div class="input-group">
+              <input id="roomUrl" class="form-control" readonly />
+              <button id="copyBtn" class="btn btn-outline-secondary">Copy</button>
+              <a id="openLink" class="btn btn-success" href="#">Open</a>
+            </div>
+          </div>
+
+          <div id="error" class="alert alert-danger mt-4 d-none"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const createBtn = document.getElementById('createBtn');
+      const result = document.getElementById('result');
+      const roomUrl = document.getElementById('roomUrl');
+      const copyBtn = document.getElementById('copyBtn');
+      const openLink = document.getElementById('openLink');
+      const error = document.getElementById('error');
+
+      function showError(msg) {
+        error.textContent = msg;
+        error.classList.remove('d-none');
+      }
+
+      createBtn.addEventListener('click', async () => {
+        error.classList.add('d-none');
+        result.classList.add('d-none');
+
+        try {
+          const res = await fetch('/api/rooms', { method: 'POST' });
+          if (!res.ok) throw new Error('Failed to create room');
+          const data = await res.json();
+
+          roomUrl.value = data.room_url;
+          openLink.href = data.room_url;
+          result.classList.remove('d-none');
+        } catch (e) {
+          showError(e?.message || 'Something went wrong');
+        }
+      });
+
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(roomUrl.value);
+          copyBtn.textContent = 'Copied';
+          setTimeout(() => (copyBtn.textContent = 'Copy'), 1000);
+        } catch {
+          showError('Clipboard not available in this browser');
+        }
+      });
+    </script>
+  </body>
+</html>
