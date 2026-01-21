@@ -1,439 +1,489 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Room {{ room_id }}</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
-    <style>
-      :root {
-        --bg-primary: #ffffff;
-        --bg-secondary: #f8fafc;
-        --bg-tertiary: #f1f5f9;
-        --text-primary: #0f172a;
-        --text-secondary: #334155;
-        --text-muted: #64748b;
-        --border-primary: #e2e8f0;
-        --brand-primary: #2563eb;
-        --shadow-color: rgba(15, 23, 42, 0.08);
-      }
 
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Room {{ room_id }}</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f8fafc;
+      --bg-tertiary: #f1f5f9;
+      --text-primary: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+      --border-primary: #e2e8f0;
+      --brand-primary: #2563eb;
+      --shadow-color: rgba(15, 23, 42, 0.08);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 100dvw;
+      max-width: 100dvw;
+      height: 100dvh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .chat-shell {
+      height: 100dvh;
+    }
+
+    @media (min-width: 640px) {
       .chat-shell {
-        height: 100dvh;
+        height: calc(100dvh - 3rem);
+      }
+    }
+
+    #messages {
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
+    .chat-bg {
+      background: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.10), transparent 45%),
+        radial-gradient(circle at 90% 0%, rgba(99, 102, 241, 0.10), transparent 40%),
+        linear-gradient(180deg, #f8fafc, #f1f5f9);
+    }
+
+    .bubble {
+      border-radius: 1rem;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+
+    .bubble-sent {
+      background: #dcf8c6;
+      border-color: rgba(134, 239, 172, 0.7);
+    }
+
+    .bubble-received {
+      background: #ffffff;
+      border-color: rgba(226, 232, 240, 0.9);
+    }
+
+    .typing-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #94a3b8;
+      display: inline-block;
+      animation: typingBounce 1.2s infinite ease-in-out;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    @keyframes typingBounce {
+
+      0%,
+      80%,
+      100% {
+        transform: translateY(0);
+        opacity: 0.55;
       }
 
-      #messages {
-        overflow-y: auto;
-        scroll-behavior: smooth;
+      40% {
+        transform: translateY(-4px);
+        opacity: 1;
       }
+    }
 
-      .chat-bg {
-        background: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.10), transparent 45%),
-          radial-gradient(circle at 90% 0%, rgba(99, 102, 241, 0.10), transparent 40%),
-          linear-gradient(180deg, #f8fafc, #f1f5f9);
-      }
+    .bubble .text {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
 
-      .bubble {
-        border-radius: 1rem;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
-        border: 1px solid rgba(226, 232, 240, 0.8);
-      }
+    .minimal-input {
+      border-radius: 0.75rem;
+      border: 1px solid var(--border-primary);
+      background: var(--bg-primary);
+      outline: none;
+    }
 
-      .bubble-sent {
-        background: #dcf8c6;
-        border-color: rgba(134, 239, 172, 0.7);
-      }
+    .minimal-input:focus {
+      border-color: rgba(99, 102, 241, 0.65);
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+    }
 
-      .bubble-received {
-        background: #ffffff;
-        border-color: rgba(226, 232, 240, 0.9);
-      }
+    .minimal-btn {
+      border-radius: 0.75rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
 
-      .typing-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 999px;
-        background: #94a3b8;
-        display: inline-block;
-        animation: typingBounce 1.2s infinite ease-in-out;
-      }
+    .minimal-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px var(--shadow-color);
+    }
+  </style>
+</head>
 
-      .typing-dot:nth-child(2) {
-        animation-delay: 0.15s;
-      }
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
+  <div class="p-0 sm:p-6 overflow-hidden">
+    <div class="mx-auto max-w-5xl">
+      <div
+        class="chat-shell w-full h-full relative grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-0 sm:gap-4 overflow-hidden">
+        <div id="drawerOverlay" class="hidden lg:hidden fixed inset-0 z-40 bg-slate-950/30"></div>
 
-      .typing-dot:nth-child(3) {
-        animation-delay: 0.3s;
-      }
-
-      @keyframes typingBounce {
-        0%,
-        80%,
-        100% {
-          transform: translateY(0);
-          opacity: 0.55;
-        }
-        40% {
-          transform: translateY(-4px);
-          opacity: 1;
-        }
-      }
-
-      .bubble .text {
-        white-space: pre-wrap;
-        word-break: break-word;
-      }
-
-      .minimal-input {
-        border-radius: 0.75rem;
-        border: 1px solid var(--border-primary);
-        background: var(--bg-primary);
-        outline: none;
-      }
-
-      .minimal-input:focus {
-        border-color: rgba(99, 102, 241, 0.65);
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
-      }
-
-      .minimal-btn {
-        border-radius: 0.75rem;
-        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-      }
-
-      .minimal-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 16px var(--shadow-color);
-      }
-    </style>
-  </head>
-  <body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
-    <div class="p-0 sm:p-6">
-      <div class="mx-auto max-w-5xl">
-        <div class="chat-shell relative grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-0 sm:gap-4">
-          <div
-            id="drawerOverlay"
-            class="hidden lg:hidden fixed inset-0 z-40 bg-slate-950/30"
-          ></div>
-
-          <aside
-            id="roomDrawer"
-            class="bg-white border border-slate-200 shadow-[0_1px_3px_rgba(15,23,42,0.04)] overflow-hidden
+        <aside id="roomDrawer" class="bg-white border border-slate-200 shadow-[0_1px_3px_rgba(15,23,42,0.04)] overflow-hidden
               fixed lg:static inset-y-0 left-0 z-50 w-[92%] max-w-sm
               transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out
-              rounded-r-2xl lg:rounded-2xl"
-          >
-            <div class="p-5 border-b border-slate-200">
-              <div class="flex items-center gap-3">
-                <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-[0_2px_8px_rgba(15,23,42,0.08)] flex items-center justify-center">
-                  <span class="iconify text-white" data-icon="solar:chat-round-bold" data-width="22"></span>
-                </div>
-                <div class="min-w-0">
-                  <div class="text-[12px] uppercase tracking-[0.2em] text-slate-500">Room</div>
-                  <div class="text-lg font-semibold text-slate-900 truncate">{{ room_id }}</div>
-                </div>
-                <button
-                  id="closeDrawerBtn"
-                  type="button"
-                  class="minimal-btn lg:hidden ml-auto inline-flex items-center justify-center h-10 w-10 bg-slate-100 border border-slate-200"
-                  aria-label="Close"
-                >
-                  <span class="iconify text-slate-700" data-icon="solar:close-circle-bold" data-width="20"></span>
+              rounded-r-2xl lg:rounded-2xl">
+          <div class="p-5 border-b border-slate-200">
+            <div class="flex items-center gap-3">
+              <div
+                class="h-12 w-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-[0_2px_8px_rgba(15,23,42,0.08)] flex items-center justify-center">
+                <span class="iconify text-white" data-icon="solar:chat-round-bold" data-width="22"></span>
+              </div>
+              <div class="min-w-0">
+                <div class="text-[12px] uppercase tracking-[0.2em] text-slate-500">Room</div>
+                <div class="text-lg font-semibold text-slate-900 truncate">{{ room_id }}</div>
+              </div>
+              <button id="closeDrawerBtn" type="button"
+                class="minimal-btn lg:hidden ml-auto inline-flex items-center justify-center h-10 w-10 bg-slate-100 border border-slate-200"
+                aria-label="Close">
+                <span class="iconify text-slate-700" data-icon="solar:close-circle-bold" data-width="20"></span>
+              </button>
+            </div>
+          </div>
+
+          <div class="p-5 space-y-4">
+            <div>
+              <div class="text-xs uppercase tracking-wider text-slate-500 mb-2">Your name</div>
+              <input id="username" class="minimal-input w-full px-4 py-3 text-sm" placeholder="e.g. Alex" />
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <div class="text-xs uppercase tracking-wider text-slate-500">Online</div>
+                <div id="onlineCount" class="text-xs text-slate-500">0</div>
+              </div>
+              <div id="onlineUsers" class="rounded-xl border border-slate-200 bg-white max-h-52 overflow-auto">
+                <div class="px-4 py-3 text-sm text-slate-500">Loading...</div>
+              </div>
+            </div>
+
+            <div>
+              <div class="text-xs uppercase tracking-wider text-slate-500 mb-2">Share link</div>
+              <div class="flex gap-3">
+                <input id="shareUrl" class="minimal-input w-full px-4 py-3 text-sm" readonly />
+                <button id="copyBtn"
+                  class="minimal-btn shrink-0 inline-flex items-center justify-center gap-2 px-4 py-3 font-medium text-slate-700 bg-slate-100 border border-slate-200"
+                  type="button">
+                  <span class="iconify" data-icon="solar:copy-bold" data-width="18"></span>
+                  Copy
                 </button>
               </div>
             </div>
 
-            <div class="p-5 space-y-4">
-              <div>
-                <div class="text-xs uppercase tracking-wider text-slate-500 mb-2">Your name</div>
-                <input id="username" class="minimal-input w-full px-4 py-3 text-sm" placeholder="e.g. Alex" />
+            <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600">
+              <div class="flex items-center gap-2">
+                <span class="iconify text-slate-500" data-icon="solar:info-circle-bold" data-width="16"></span>
+                <span>Anyone with this link can join this room.</span>
               </div>
-
-              <div>
-                <div class="flex items-center justify-between mb-2">
-                  <div class="text-xs uppercase tracking-wider text-slate-500">Online</div>
-                  <div id="onlineCount" class="text-xs text-slate-500">0</div>
-                </div>
-                <div id="onlineUsers" class="rounded-xl border border-slate-200 bg-white max-h-52 overflow-auto">
-                  <div class="px-4 py-3 text-sm text-slate-500">Loading...</div>
-                </div>
-              </div>
-
-              <div>
-                <div class="text-xs uppercase tracking-wider text-slate-500 mb-2">Share link</div>
-                <div class="flex gap-3">
-                  <input id="shareUrl" class="minimal-input w-full px-4 py-3 text-sm" readonly />
-                  <button
-                    id="copyBtn"
-                    class="minimal-btn shrink-0 inline-flex items-center justify-center gap-2 px-4 py-3 font-medium text-slate-700 bg-slate-100 border border-slate-200"
-                    type="button"
-                  >
-                    <span class="iconify" data-icon="solar:copy-bold" data-width="18"></span>
-                    Copy
-                  </button>
-                </div>
-              </div>
-
-              <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600">
-                <div class="flex items-center gap-2">
-                  <span class="iconify text-slate-500" data-icon="solar:info-circle-bold" data-width="16"></span>
-                  <span>Anyone with this link can join this room.</span>
-                </div>
-              </div>
-
-              <div id="status" class="text-xs text-slate-500">Connecting...</div>
-            </div>
-          </aside>
-
-          <section class="bg-white border border-slate-200 overflow-hidden shadow-[0_30px_80px_rgba(15,23,42,0.12),0_2px_10px_rgba(15,23,42,0.06)] flex flex-col rounded-none sm:rounded-2xl">
-            <header class="px-5 py-4 border-b border-slate-200 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white">
-              <div class="flex items-center justify-between gap-4">
-                <div class="min-w-0">
-                  <div class="text-sm/5 opacity-90">Messaging room</div>
-                  <div class="font-semibold truncate">{{ room_id }}</div>
-                  <div class="text-[11px] opacity-90">
-                    You: <span id="myNameHeader" class="font-medium"></span>
-                  </div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button
-                    id="openDrawerBtn"
-                    type="button"
-                    class="minimal-btn lg:hidden inline-flex items-center gap-2 px-3 py-2 text-sm font-medium bg-white/10 hover:bg-white/15 border border-white/20"
-                    aria-label="Room info"
-                  >
-                    <span class="iconify" data-icon="solar:info-circle-bold" data-width="18"></span>
-                    Info
-                  </button>
-                  <a
-                    href="/"
-                    class="minimal-btn inline-flex items-center gap-2 px-3 py-2 text-sm font-medium bg-white/10 hover:bg-white/15 border border-white/20"
-                  >
-                    <span class="iconify" data-icon="solar:home-angle-bold" data-width="18"></span>
-                    New
-                  </a>
-                </div>
-              </div>
-            </header>
-
-            <div class="chat-bg flex-1">
-              <div id="messages" class="h-full p-4 sm:p-5 space-y-3"></div>
             </div>
 
-            <footer class="p-4 border-t border-slate-200 bg-white">
-              <div class="flex items-end gap-3">
-                <textarea
-                  id="message"
-                  class="minimal-input w-full px-4 py-3 text-sm resize-none"
-                  rows="2"
-                  placeholder="Message"
-                ></textarea>
-                <button
-                  id="sendBtn"
-                  class="minimal-btn inline-flex items-center justify-center gap-2 px-4 py-3 font-medium text-white bg-gradient-to-r from-emerald-500 to-emerald-600"
-                  type="button"
-                >
-                  <span class="iconify" data-icon="solar:plain-2-bold" data-width="18"></span>
-                  Send
+            <div id="status" class="text-xs text-slate-500">Connecting...</div>
+          </div>
+        </aside>
+
+        <section
+          class="bg-white border border-slate-200 overflow-hidden shadow-[0_30px_80px_rgba(15,23,42,0.12),0_2px_10px_rgba(15,23,42,0.06)] flex flex-col min-w-0 min-h-0 rounded-none sm:rounded-2xl">
+          <header
+            class="px-5 py-4 border-b border-slate-200 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white sm:rounded-t-2xl">
+            <div class="flex items-center justify-between gap-4">
+              <div class="min-w-0">
+                <div class="text-sm/5 opacity-90">Messaging room</div>
+                <div class="font-semibold truncate">{{ room_id }}</div>
+                <div class="text-[11px] opacity-90">
+                  You: <span id="myNameHeader" class="font-medium"></span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="openDrawerBtn" type="button"
+                  class="minimal-btn lg:hidden inline-flex items-center gap-2 px-3 py-2 text-sm font-medium bg-white/10 hover:bg-white/15 border border-white/20"
+                  aria-label="Room info">
+                  <span class="iconify" data-icon="solar:info-circle-bold" data-width="18"></span>
+                  Info
                 </button>
+                <a href="/"
+                  class="minimal-btn inline-flex items-center gap-2 px-3 py-2 text-sm font-medium bg-white/10 hover:bg-white/15 border border-white/20">
+                  <span class="iconify" data-icon="solar:home-angle-bold" data-width="18"></span>
+                  New
+                </a>
               </div>
-              <div class="mt-2 text-[11px] text-slate-500">Press Enter to send, Shift+Enter for a new line.</div>
-            </footer>
-          </section>
-        </div>
+            </div>
+          </header>
+
+          <div class="chat-bg flex-1 min-h-0">
+            <div id="messages" class="h-full p-4 sm:p-5 space-y-3"></div>
+          </div>
+
+          <footer class="p-4 border-t border-slate-200 bg-white sm:rounded-b-2xl">
+            <div class="flex items-end gap-3">
+              <textarea id="message"
+                class="minimal-input w-full px-4 py-2.5 text-sm leading-5 resize-none min-h-[44px] max-h-32 overflow-y-auto"
+                rows="1" placeholder="Message"></textarea>
+              <button id="sendBtn"
+                class="minimal-btn inline-flex items-center justify-center gap-2 px-4 py-2.5 font-medium text-white bg-gradient-to-r from-emerald-500 to-emerald-600"
+                type="button">
+                <span class="iconify" data-icon="solar:plain-2-bold" data-width="18"></span>
+                Send
+              </button>
+            </div>
+            <div class="mt-2 text-[11px] text-slate-500">Press Enter to send, Shift+Enter for a new line.</div>
+          </footer>
+        </section>
       </div>
     </div>
+  </div>
 
-    <script>
-      const roomId = '{{ room_id }}';
-      const messagesEl = document.getElementById('messages');
-      const usernameEl = document.getElementById('username');
-      const messageEl = document.getElementById('message');
-      const sendBtn = document.getElementById('sendBtn');
-      const statusEl = document.getElementById('status');
-      const shareUrlEl = document.getElementById('shareUrl');
-      const copyBtn = document.getElementById('copyBtn');
-      const myNameHeaderEl = document.getElementById('myNameHeader');
+  <script>
+    const roomId = '{{ room_id }}';
+    const messagesEl = document.getElementById('messages');
+    const usernameEl = document.getElementById('username');
+    const messageEl = document.getElementById('message');
+    const sendBtn = document.getElementById('sendBtn');
+    const statusEl = document.getElementById('status');
+    const shareUrlEl = document.getElementById('shareUrl');
+    const copyBtn = document.getElementById('copyBtn');
+    const myNameHeaderEl = document.getElementById('myNameHeader');
 
-      const onlineUsersEl = document.getElementById('onlineUsers');
-      const onlineCountEl = document.getElementById('onlineCount');
+    const onlineUsersEl = document.getElementById('onlineUsers');
+    const onlineCountEl = document.getElementById('onlineCount');
 
-      const roomDrawerEl = document.getElementById('roomDrawer');
-      const drawerOverlayEl = document.getElementById('drawerOverlay');
-      const openDrawerBtn = document.getElementById('openDrawerBtn');
-      const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+    const roomDrawerEl = document.getElementById('roomDrawer');
+    const drawerOverlayEl = document.getElementById('drawerOverlay');
+    const openDrawerBtn = document.getElementById('openDrawerBtn');
+    const closeDrawerBtn = document.getElementById('closeDrawerBtn');
 
-      const USERNAME_STORAGE_KEY = 'local_messaging_username';
-      let myUsername = '';
+    const USERNAME_STORAGE_KEY = 'local_messaging_username';
+    let myUsername = '';
+    let roomPassword = '';
+    let isAuthed = false;
 
-      function colorForUsername(name) {
-        const palette = [
-          '#2563eb',
-          '#7c3aed',
-          '#db2777',
-          '#dc2626',
-          '#ea580c',
-          '#16a34a',
-          '#0d9488',
-          '#0284c7',
-        ];
+    function getApiBase() {
+      if (window.location.protocol === 'file:') {
+        return 'http://localhost:8090';
+      }
+      return '';
+    }
 
-        let hash = 0;
-        for (let i = 0; i < name.length; i++) {
-          hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
-        }
-        return palette[hash % palette.length];
+    async function isRoomProtected() {
+      try {
+        const apiBase = getApiBase();
+        const res = await fetch(`${apiBase}/api/rooms/${encodeURIComponent(roomId)}`);
+        if (!res.ok) return false;
+        const data = await res.json();
+        return Boolean(data?.protected);
+      } catch {
+        return false;
+      }
+    }
+
+    async function requireRoomPassword() {
+      const protectedRoom = await isRoomProtected();
+      if (!protectedRoom) {
+        roomPassword = '';
+        return;
       }
 
-      function sendPresence() {
-        if (!socket || socket.readyState !== WebSocket.OPEN) return;
-        const username = (myUsername || '').trim();
-        if (!username) return;
-        socket.send(
-          JSON.stringify({
-            type: 'presence',
-            username,
-          })
-        );
-      }
-
-      function renderOnlineUsers(users) {
-        if (!onlineUsersEl || !onlineCountEl) return;
-        const list = Array.isArray(users) ? users : [];
-        onlineCountEl.textContent = String(list.length);
-
-        onlineUsersEl.innerHTML = '';
-        if (list.length === 0) {
-          const empty = document.createElement('div');
-          empty.className = 'px-4 py-3 text-sm text-slate-500';
-          empty.textContent = 'No users online';
-          onlineUsersEl.appendChild(empty);
-          return;
-        }
-
-        for (const name of list) {
-          const row = document.createElement('div');
-          row.className = 'px-4 py-2.5 border-b border-slate-200 last:border-b-0 flex items-center gap-3';
-
-          const dot = document.createElement('div');
-          dot.className = 'h-2.5 w-2.5 rounded-full';
-          dot.style.background = name === myUsername ? '#16a34a' : colorForUsername(name);
-
-          const label = document.createElement('div');
-          label.className = 'text-sm text-slate-800';
-          label.textContent = name === myUsername ? `${name} (You)` : name;
-
-          row.appendChild(dot);
-          row.appendChild(label);
-          onlineUsersEl.appendChild(row);
-        }
-      }
-
-      shareUrlEl.value = window.location.href;
-
-      function requireUsername() {
-        const existing = (localStorage.getItem(USERNAME_STORAGE_KEY) || '').trim();
-        if (existing) {
-          myUsername = existing;
-          usernameEl.value = existing;
-          if (myNameHeaderEl) myNameHeaderEl.textContent = existing;
-          return;
-        }
-
-        let name = '';
-        while (!name) {
-          name = (window.prompt('Enter your name to join this room:') || '').trim();
-          if (!name) {
-            const retry = window.confirm('Name is required to chat. Try again?');
-            if (!retry) {
-              window.location.href = '/';
-              return;
-            }
+      let pwd = '';
+      while (!pwd) {
+        pwd = (window.prompt('This room is password protected. Enter room password:') || '').trim();
+        if (!pwd) {
+          const retry = window.confirm('Password is required to join. Try again?');
+          if (!retry) {
+            window.location.href = '/';
+            return;
           }
         }
+      }
+      roomPassword = pwd;
+    }
 
-        localStorage.setItem(USERNAME_STORAGE_KEY, name);
-        myUsername = name;
-        usernameEl.value = name;
-        if (myNameHeaderEl) myNameHeaderEl.textContent = name;
+    function colorForUsername(name) {
+      const palette = [
+        '#2563eb',
+        '#7c3aed',
+        '#db2777',
+        '#dc2626',
+        '#ea580c',
+        '#16a34a',
+        '#0d9488',
+        '#0284c7',
+      ];
+
+      let hash = 0;
+      for (let i = 0; i <name.length; i++) {
+        hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+      }
+      return palette[hash % palette.length];
+    }
+
+    function sendPresence() {
+      if (!socket || socket.readyState !== WebSocket.OPEN) return;
+      if (!isAuthed) return;
+      const username = (myUsername || '').trim();
+      if (!username) return;
+      socket.send(
+        JSON.stringify({
+          type: 'presence',
+          username,
+        })
+      );
+    }
+
+    function renderOnlineUsers(users) {
+      if (!onlineUsersEl || !onlineCountEl) return;
+      const list = Array.isArray(users) ? users : [];
+      onlineCountEl.textContent = String(list.length);
+
+      onlineUsersEl.innerHTML = '';
+      if (list.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'px-4 py-3 text-sm text-slate-500';
+        empty.textContent = 'No users online';
+        onlineUsersEl.appendChild(empty);
+        return;
       }
 
-      function syncUsername() {
-        const next = (usernameEl.value || '').trim();
-        if (!next) {
-          return;
-        }
-        myUsername = next;
-        localStorage.setItem(USERNAME_STORAGE_KEY, next);
-        if (myNameHeaderEl) myNameHeaderEl.textContent = next;
-        sendPresence();
-      }
-
-      usernameEl.addEventListener('input', syncUsername);
-      requireUsername();
-
-      function addMessage({ username, message, ts }) {
-        const sender = (username || '').trim() || 'Unknown';
-        const isMine = sender === myUsername;
-
+      for (const name of list) {
         const row = document.createElement('div');
-        row.className = `flex ${isMine ? 'justify-end' : 'justify-start'}`;
+        row.className = 'px-4 py-2.5 border-b border-slate-200 last:border-b-0 flex items-center gap-3';
 
-        const bubble = document.createElement('div');
-        bubble.className = `bubble max-w-[85%] sm:max-w-[70%] px-3.5 py-2.5 ${
-          isMine ? 'bubble-sent' : 'bubble-received'
+        const dot = document.createElement('div');
+        dot.className = 'h-2.5 w-2.5 rounded-full';
+        dot.style.background = name === myUsername ? '#16a34a' : colorForUsername(name);
+
+        const label = document.createElement('div');
+        label.className = 'text-sm text-slate-800';
+        label.textContent = name === myUsername ? `${name} (You)` : name;
+
+        row.appendChild(dot);
+        row.appendChild(label);
+        onlineUsersEl.appendChild(row);
+      }
+    }
+
+    shareUrlEl.value = window.location.href;
+
+    function requireUsername() {
+      const existing = (localStorage.getItem(USERNAME_STORAGE_KEY) || '').trim();
+      if (existing) {
+        myUsername = existing;
+        usernameEl.value = existing;
+        if (myNameHeaderEl) myNameHeaderEl.textContent = existing;
+        return;
+      }
+
+      let name = '';
+      while (!name) {
+        name = (window.prompt('Enter your name to join this room:') || '').trim();
+        if (!name) {
+          const retry = window.confirm('Name is required to chat. Try again?');
+          if (!retry) {
+            window.location.href = '/';
+            return;
+          }
+        }
+      }
+
+      localStorage.setItem(USERNAME_STORAGE_KEY, name);
+      myUsername = name;
+      usernameEl.value = name;
+      if (myNameHeaderEl) myNameHeaderEl.textContent = name;
+    }
+
+    function syncUsername() {
+      const next = (usernameEl.value || '').trim();
+      if (!next) {
+        return;
+      }
+      myUsername = next;
+      localStorage.setItem(USERNAME_STORAGE_KEY, next);
+      if (myNameHeaderEl) myNameHeaderEl.textContent = next;
+      sendPresence();
+    }
+
+    usernameEl.addEventListener('input', syncUsername);
+    requireUsername();
+
+    function addMessage({ username, message, ts }) {
+      const sender = (username || '').trim() || 'Unknown';
+      const isMine = sender === myUsername;
+
+      const row = document.createElement('div');
+      row.className = `flex ${isMine ? 'justify-end' : 'justify-start'}`;
+
+      const bubble = document.createElement('div');
+      bubble.className = `bubble max-w-[85%] sm:max-w-[70%] px-3.5 py-2.5 ${isMine ? 'bubble-sent' : 'bubble-received'
         }`;
 
-        const meta = document.createElement('div');
-        meta.className = 'text-[11px] mb-1 flex items-center gap-2';
+      const meta = document.createElement('div');
+      meta.className = 'text-[11px] mb-1 flex items-center gap-2';
 
-        const nameSpan = document.createElement('span');
-        nameSpan.className = 'font-semibold';
-        nameSpan.textContent = sender;
-        nameSpan.style.color = isMine ? '#0f172a' : colorForUsername(sender);
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'font-semibold';
+      nameSpan.textContent = sender;
+      nameSpan.style.color = isMine ? '#0f172a' : colorForUsername(sender);
 
-        const timeSpan = document.createElement('span');
-        timeSpan.className = 'text-slate-500';
-        const when = ts
-          ? new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          : '';
-        timeSpan.textContent = when;
+      const timeSpan = document.createElement('span');
+      timeSpan.className = 'text-slate-500';
+      const when = ts
+        ? new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : '';
+      timeSpan.textContent = when;
 
-        meta.appendChild(nameSpan);
-        if (when) meta.appendChild(timeSpan);
+      meta.appendChild(nameSpan);
+      if (when) meta.appendChild(timeSpan);
 
-        const text = document.createElement('div');
-        text.className = 'text text-sm text-slate-800';
-        text.textContent = message || '';
+      const text = document.createElement('div');
+      text.className = 'text text-sm text-slate-800';
+      text.textContent = message || '';
 
-        bubble.appendChild(meta);
-        bubble.appendChild(text);
-        row.appendChild(bubble);
-        messagesEl.appendChild(row);
-        if (typingRowEl.parentElement === messagesEl) {
-          messagesEl.appendChild(typingRowEl);
-        }
-        messagesEl.scrollTop = messagesEl.scrollHeight;
+      bubble.appendChild(meta);
+      bubble.appendChild(text);
+      row.appendChild(bubble);
+      messagesEl.appendChild(row);
+      if (typingRowEl.parentElement === messagesEl) {
+        messagesEl.appendChild(typingRowEl);
       }
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
 
-      function setStatus(text) {
-        statusEl.textContent = text;
-      }
+    function setStatus(text) {
+      statusEl.textContent = text;
+    }
 
-      const wsProto = window.location.protocol === 'https:' ? 'wss' : 'ws';
-      const wsUrl = `${wsProto}://${window.location.host}/ws/${encodeURIComponent(roomId)}`;
-      let socket;
+    const wsProto = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const wsUrl = `${wsProto}://${window.location.host}/ws/${encodeURIComponent(roomId)}`;
+    let socket;
 
-      const typingUsers = new Map();
-      let typingDebounceTimer;
-      let typingStopTimer;
-      let isTyping = false;
-      let typingPruneTimer;
+    const typingUsers = new Map();
+    let typingDebounceTimer;
+    let typingStopTimer;
+    let isTyping = false;
+    let typingPruneTimer;
 
-      const typingRowEl = document.createElement('div');
-      typingRowEl.className = 'hidden flex justify-start';
-      typingRowEl.innerHTML = `
+    const typingRowEl = document.createElement('div');
+    typingRowEl.className = 'hidden flex justify-start';
+    typingRowEl.innerHTML = `
         <div class="max-w-[85%] sm:max-w-[70%]">
           <div id="typingName" class="text-[11px] text-slate-500 mb-1"></div>
           <div class="bubble bubble-received px-4 py-3 inline-flex items-center gap-2">
@@ -443,204 +493,251 @@
           </div>
         </div>
       `;
-      const typingNameEl = typingRowEl.querySelector('#typingName');
+    const typingNameEl = typingRowEl.querySelector('#typingName');
 
-      function renderTypingStatus() {
-        const now = Date.now();
-        for (const [name, expiry] of typingUsers.entries()) {
-          if (expiry <= now) typingUsers.delete(name);
+    function renderTypingStatus() {
+      const now = Date.now();
+      for (const [name, expiry] of typingUsers.entries()) {
+        if (expiry <= now) typingUsers.delete(name);
+      }
+
+      const names = Array.from(typingUsers.keys()).filter((n) => n && n !== myUsername);
+      if (names.length === 0) {
+        typingRowEl.classList.add('hidden');
+        return;
+      }
+
+      if (typingNameEl) {
+        if (names.length === 1) {
+          typingNameEl.textContent = names[0];
+        } else if (names.length === 2) {
+          typingNameEl.textContent = `${names[0]}, ${names[1]}`;
+        } else {
+          typingNameEl.textContent = `${names[0]} +${names.length - 1}`;
         }
+      }
 
-        const names = Array.from(typingUsers.keys()).filter((n) => n && n !== myUsername);
-        if (names.length === 0) {
-          typingRowEl.classList.add('hidden');
+      typingRowEl.classList.remove('hidden');
+      if (typingRowEl.parentElement !== messagesEl) {
+        messagesEl.appendChild(typingRowEl);
+      } else {
+        messagesEl.appendChild(typingRowEl);
+      }
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function sendTypingEvent(nextIsTyping) {
+      if (!socket || socket.readyState !== WebSocket.OPEN) return;
+      if (!isAuthed) return;
+      const username = (myUsername || '').trim();
+      if (!username) return;
+      socket.send(
+        JSON.stringify({
+          type: 'typing',
+          username,
+          is_typing: Boolean(nextIsTyping),
+        })
+      );
+    }
+
+    function setTyping(next) {
+      if (isTyping === next) return;
+      isTyping = next;
+      sendTypingEvent(isTyping);
+    }
+
+    function onLocalTyping() {
+      autoResizeMessageBox();
+      clearTimeout(typingDebounceTimer);
+      typingDebounceTimer = setTimeout(() => {
+        if ((messageEl.value || '').trim().length === 0) {
+          setTyping(false);
           return;
         }
+        setTyping(true);
+      }, 150);
 
-        if (typingNameEl) {
-          if (names.length === 1) {
-            typingNameEl.textContent = names[0];
-          } else if (names.length === 2) {
-            typingNameEl.textContent = `${names[0]}, ${names[1]}`;
-          } else {
-            typingNameEl.textContent = `${names[0]} +${names.length - 1}`;
-          }
-        }
+      clearTimeout(typingStopTimer);
+      typingStopTimer = setTimeout(() => {
+        setTyping(false);
+      }, 1200);
+    }
 
-        typingRowEl.classList.remove('hidden');
+    function connect() {
+      socket = new WebSocket(wsUrl);
+
+      socket.addEventListener('open', () => {
+        setStatus('Connected');
+        sendBtn.disabled = false;
+        typingUsers.clear();
+        renderTypingStatus();
         if (typingRowEl.parentElement !== messagesEl) {
           messagesEl.appendChild(typingRowEl);
-        } else {
-          messagesEl.appendChild(typingRowEl);
-        }
-        messagesEl.scrollTop = messagesEl.scrollHeight;
-      }
-
-      function sendTypingEvent(nextIsTyping) {
-        if (!socket || socket.readyState !== WebSocket.OPEN) return;
-        const username = (myUsername || '').trim();
-        if (!username) return;
-        socket.send(
-          JSON.stringify({
-            type: 'typing',
-            username,
-            is_typing: Boolean(nextIsTyping),
-          })
-        );
-      }
-
-      function setTyping(next) {
-        if (isTyping === next) return;
-        isTyping = next;
-        sendTypingEvent(isTyping);
-      }
-
-      function onLocalTyping() {
-        clearTimeout(typingDebounceTimer);
-        typingDebounceTimer = setTimeout(() => {
-          if ((messageEl.value || '').trim().length === 0) {
-            setTyping(false);
-            return;
-          }
-          setTyping(true);
-        }, 150);
-
-        clearTimeout(typingStopTimer);
-        typingStopTimer = setTimeout(() => {
-          setTyping(false);
-        }, 1200);
-      }
-
-      function connect() {
-        socket = new WebSocket(wsUrl);
-
-        socket.addEventListener('open', () => {
-          setStatus('Connected');
-          sendBtn.disabled = false;
-          typingUsers.clear();
-          renderTypingStatus();
-          if (typingRowEl.parentElement !== messagesEl) {
-            messagesEl.appendChild(typingRowEl);
-          }
-          sendPresence();
-        });
-
-        socket.addEventListener('close', () => {
-          setStatus('Disconnected (retrying...)');
-          sendBtn.disabled = true;
-          typingUsers.clear();
-          renderTypingStatus();
-          renderOnlineUsers([]);
-          setTimeout(connect, 800);
-        });
-
-        socket.addEventListener('error', () => {
-          setStatus('Connection error');
-        });
-
-        socket.addEventListener('message', (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            if (data.type === 'chat') {
-              addMessage(data);
-              return;
-            }
-            if (data.type === 'presence') {
-              renderOnlineUsers(data.users);
-              return;
-            }
-            if (data.type === 'typing') {
-              const name = (data.username || '').trim();
-              if (!name || name === myUsername) return;
-
-              if (data.is_typing) {
-                typingUsers.set(name, Date.now() + 2500);
-              } else {
-                typingUsers.delete(name);
-              }
-              renderTypingStatus();
-              return;
-            }
-          } catch {
-            return;
-          }
-        });
-      }
-
-      function sendMessage() {
-        syncUsername();
-        const username = (myUsername || '').trim();
-        if (!username) {
-          requireUsername();
-          return;
-        }
-        const message = (messageEl.value || '').trim();
-        if (!message) return;
-
-        setTyping(false);
-
-        if (!socket || socket.readyState !== WebSocket.OPEN) {
-          setStatus('Not connected');
-          return;
-        }
-
-        socket.send(
-          JSON.stringify({
-            type: 'chat',
-            username,
-            message,
-          })
-        );
-        messageEl.value = '';
-        messageEl.focus();
-      }
-
-      sendBtn.addEventListener('click', sendMessage);
-      messageEl.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          sendMessage();
         }
       });
 
-      messageEl.addEventListener('input', onLocalTyping);
-      messageEl.addEventListener('blur', () => setTyping(false));
-
-      window.addEventListener('beforeunload', () => setTyping(false));
-
-      typingPruneTimer = setInterval(renderTypingStatus, 600);
-
-      function openDrawer() {
-        if (!roomDrawerEl || !drawerOverlayEl) return;
-        roomDrawerEl.classList.remove('-translate-x-full');
-        drawerOverlayEl.classList.remove('hidden');
-      }
-
-      function closeDrawer() {
-        if (!roomDrawerEl || !drawerOverlayEl) return;
-        roomDrawerEl.classList.add('-translate-x-full');
-        drawerOverlayEl.classList.add('hidden');
-      }
-
-      if (openDrawerBtn) openDrawerBtn.addEventListener('click', openDrawer);
-      if (closeDrawerBtn) closeDrawerBtn.addEventListener('click', closeDrawer);
-      if (drawerOverlayEl) drawerOverlayEl.addEventListener('click', closeDrawer);
-      window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeDrawer();
+      socket.addEventListener('close', () => {
+        setStatus('Disconnected (retrying...)');
+        sendBtn.disabled = true;
+        typingUsers.clear();
+        renderTypingStatus();
+        renderOnlineUsers([]);
+        setTimeout(connect, 800);
       });
 
-      copyBtn.addEventListener('click', async () => {
+      socket.addEventListener('error', () => {
+        setStatus('Connection error');
+      });
+
+      socket.addEventListener('message', (event) => {
         try {
-          await navigator.clipboard.writeText(shareUrlEl.value);
-          copyBtn.textContent = 'Copied';
-          setTimeout(() => (copyBtn.textContent = 'Copy'), 1000);
+          const data = JSON.parse(event.data);
+          if (data.type === 'auth_required') {
+            isAuthed = false;
+            setStatus('Password required');
+            sendBtn.disabled = true;
+            socket.send(
+              JSON.stringify({
+                type: 'auth',
+                password: roomPassword || '',
+              })
+            );
+            return;
+          }
+          if (data.type === 'auth_ok') {
+            isAuthed = true;
+            setStatus('Connected');
+            sendBtn.disabled = false;
+            sendPresence();
+            return;
+          }
+          if (data.type === 'auth_error') {
+            isAuthed = false;
+            sendBtn.disabled = true;
+            const msg = (data.message || 'Authentication failed').trim();
+            window.alert(msg);
+            window.location.href = '/';
+            return;
+          }
+          if (data.type === 'chat') {
+            addMessage(data);
+            return;
+          }
+          if (data.type === 'presence') {
+            renderOnlineUsers(data.users);
+            return;
+          }
+          if (data.type === 'typing') {
+            const name = (data.username || '').trim();
+            if (!name || name === myUsername) return;
+
+            if (data.is_typing) {
+              typingUsers.set(name, Date.now() + 2500);
+            } else {
+              typingUsers.delete(name);
+            }
+            renderTypingStatus();
+            return;
+          }
         } catch {
-          copyBtn.textContent = 'Copy failed';
-          setTimeout(() => (copyBtn.textContent = 'Copy'), 1000);
+          return;
         }
       });
+    }
 
+    function sendMessage() {
+      syncUsername();
+      const username = (myUsername || '').trim();
+      if (!username) {
+        requireUsername();
+        return;
+      }
+      const message = (messageEl.value || '').trim();
+      if (!message) return;
+
+      setTyping(false);
+
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        setStatus('Not connected');
+        return;
+      }
+
+      if (!isAuthed) {
+        setStatus('Waiting for authentication...');
+        return;
+      }
+
+      socket.send(
+        JSON.stringify({
+          type: 'chat',
+          username,
+          message,
+        })
+      );
+      messageEl.value = '';
+      messageEl.focus();
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    messageEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    messageEl.addEventListener('input', onLocalTyping);
+    messageEl.addEventListener('blur', () => setTyping(false));
+
+    function autoResizeMessageBox() {
+      if (!messageEl) return;
+      messageEl.style.height = 'auto';
+      const maxPx = 128;
+      const next = Math.min(messageEl.scrollHeight, maxPx);
+      messageEl.style.height = `${next}px`;
+    }
+
+    autoResizeMessageBox();
+
+    window.addEventListener('beforeunload', () => setTyping(false));
+
+    typingPruneTimer = setInterval(renderTypingStatus, 600);
+
+    function openDrawer() {
+      if (!roomDrawerEl || !drawerOverlayEl) return;
+      roomDrawerEl.classList.remove('-translate-x-full');
+      drawerOverlayEl.classList.remove('hidden');
+    }
+
+    function closeDrawer() {
+      if (!roomDrawerEl || !drawerOverlayEl) return;
+      roomDrawerEl.classList.add('-translate-x-full');
+      drawerOverlayEl.classList.add('hidden');
+    }
+
+    if (openDrawerBtn) openDrawerBtn.addEventListener('click', openDrawer);
+    if (closeDrawerBtn) closeDrawerBtn.addEventListener('click', closeDrawer);
+    if (drawerOverlayEl) drawerOverlayEl.addEventListener('click', closeDrawer);
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeDrawer();
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(shareUrlEl.value);
+        copyBtn.textContent = 'Copied';
+        setTimeout(() => (copyBtn.textContent = 'Copy'), 1000);
+      } catch {
+        copyBtn.textContent = 'Copy failed';
+        setTimeout(() => (copyBtn.textContent = 'Copy'), 1000);
+      }
+    });
+
+    (async () => {
+      await requireRoomPassword();
       connect();
-    </script>
-  </body>
+    })();
+  </script>
+</body>
+
 </html>

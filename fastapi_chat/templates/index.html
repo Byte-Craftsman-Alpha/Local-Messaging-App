@@ -1,164 +1,179 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Create Room</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
-    <style>
-      :root {
-        --bg-primary: #ffffff;
-        --bg-secondary: #f8fafc;
-        --bg-tertiary: #f1f5f9;
-        --text-primary: #0f172a;
-        --text-secondary: #334155;
-        --text-muted: #64748b;
-        --border-primary: #e2e8f0;
-        --border-secondary: #cbd5f5;
-        --brand-primary: #2563eb;
-        --brand-secondary: #1e40af;
-        --brand-soft: #dbeafe;
-        --success: #16a34a;
-        --shadow-color: rgba(15, 23, 42, 0.08);
-      }
 
-      .minimal-card {
-        background: var(--bg-primary);
-        border: 1px solid var(--border-primary);
-        border-radius: 1rem;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-      }
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Create Room</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f8fafc;
+      --bg-tertiary: #f1f5f9;
+      --text-primary: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+      --border-primary: #e2e8f0;
+      --border-secondary: #cbd5f5;
+      --brand-primary: #2563eb;
+      --brand-secondary: #1e40af;
+      --brand-soft: #dbeafe;
+      --success: #16a34a;
+      --shadow-color: rgba(15, 23, 42, 0.08);
+    }
 
-      .minimal-input {
-        border-radius: 0.75rem;
-        border: 1px solid var(--border-primary);
-        background: var(--bg-primary);
-        outline: none;
-      }
+    .minimal-card {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-primary);
+      border-radius: 1rem;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
 
-      .minimal-input:focus {
-        border-color: rgba(99, 102, 241, 0.65);
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
-      }
+    .minimal-input {
+      border-radius: 0.75rem;
+      border: 1px solid var(--border-primary);
+      background: var(--bg-primary);
+      outline: none;
+    }
 
-      .minimal-btn {
-        border-radius: 0.75rem;
-        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-      }
+    .minimal-input:focus {
+      border-color: rgba(99, 102, 241, 0.65);
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+    }
 
-      .minimal-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 16px var(--shadow-color);
-      }
-    </style>
-  </head>
-  <body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
-    <main class="min-h-screen flex items-center justify-center p-6">
-      <div class="w-full max-w-xl">
-        <div class="flex items-center gap-3 mb-6">
-          <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-[0_6px_16px_rgba(15,23,42,0.10)] flex items-center justify-center">
-            <span class="iconify text-white" data-icon="solar:chat-round-dots-bold" data-width="22"></span>
-          </div>
-          <div>
-            <div class="text-[12px] uppercase tracking-[0.2em] text-slate-500">Local Messaging</div>
-            <h1 class="text-2xl font-semibold text-slate-900 leading-tight">Create a room</h1>
-          </div>
+    .minimal-btn {
+      border-radius: 0.75rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .minimal-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px var(--shadow-color);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
+  <main class="min-h-screen flex items-center justify-center p-6">
+    <div class="w-full max-w-xl">
+      <div class="flex items-center gap-3 mb-6">
+        <div
+          class="h-12 w-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-[0_6px_16px_rgba(15,23,42,0.10)] flex items-center justify-center">
+          <span class="iconify text-white" data-icon="solar:chat-round-dots-bold" data-width="22"></span>
         </div>
-
-        <div class="minimal-card p-5 sm:p-6 shadow-[0_30px_80px_rgba(15,23,42,0.15),0_2px_10px_rgba(15,23,42,0.06)]">
-          <p class="text-sm text-slate-600">
-            Generate a shareable room link. Anyone with the link can join and chat in real time.
-          </p>
-
-          <div class="mt-5 flex flex-col sm:flex-row gap-3">
-            <button
-              id="createBtn"
-              class="minimal-btn w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 font-medium text-white bg-gradient-to-r from-emerald-500 to-emerald-600"
-            >
-              <span class="iconify" data-icon="solar:plus-circle-bold" data-width="20"></span>
-              Create room
-            </button>
-
-            <a
-              id="openLink"
-              class="minimal-btn w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 font-medium text-emerald-700 bg-emerald-50 border border-emerald-200"
-              href="#"
-            >
-              <span class="iconify" data-icon="solar:arrow-right-up-bold" data-width="20"></span>
-              Open room
-            </a>
-          </div>
-
-          <div id="result" class="mt-5 hidden">
-            <div class="text-xs uppercase tracking-wider text-slate-500 mb-2">Share URL</div>
-            <div class="flex flex-col sm:flex-row gap-3">
-              <input id="roomUrl" class="minimal-input w-full px-4 py-3 text-sm" readonly />
-              <button
-                id="copyBtn"
-                class="minimal-btn inline-flex items-center justify-center gap-2 px-4 py-3 font-medium text-slate-700 bg-slate-100 border border-slate-200"
-              >
-                <span class="iconify" data-icon="solar:copy-bold" data-width="18"></span>
-                Copy
-              </button>
-            </div>
-            <div class="mt-3 text-xs text-slate-500">
-              Tip: share the URL with anyone on your network.
-            </div>
-          </div>
-
-          <div id="error" class="mt-5 hidden rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"></div>
+        <div>
+          <div class="text-[12px] uppercase tracking-[0.2em] text-slate-500">Local Messaging</div>
+          <h1 class="text-2xl font-semibold text-slate-900 leading-tight">Create a room</h1>
         </div>
       </div>
-    </main>
 
-    <script>
-      const createBtn = document.getElementById('createBtn');
-      const result = document.getElementById('result');
-      const roomUrl = document.getElementById('roomUrl');
-      const copyBtn = document.getElementById('copyBtn');
-      const openLink = document.getElementById('openLink');
-      const error = document.getElementById('error');
+      <div class="minimal-card p-5 sm:p-6 shadow-[0_30px_80px_rgba(15,23,42,0.15),0_2px_10px_rgba(15,23,42,0.06)]">
+        <p class="text-sm text-slate-600">
+          Generate a shareable room link. Anyone with the link can join and chat in real time.
+        </p>
 
-      function getApiBase() {
-        if (window.location.protocol === 'file:') {
-          return 'http://localhost:8090';
-        }
-        return '';
+        <div class="mt-4">
+          <div class="text-xs uppercase tracking-wider text-slate-500 mb-2">Optional password</div>
+          <input id="roomPassword" type="password" class="minimal-input w-full px-4 py-3 text-sm"
+            placeholder="Leave empty for an open room" />
+        </div>
+
+        <div class="mt-5 flex flex-col sm:flex-row gap-3">
+          <button id="createBtn"
+            class="minimal-btn w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 font-medium text-white bg-gradient-to-r from-emerald-500 to-emerald-600">
+            <span class="iconify" data-icon="solar:plus-circle-bold" data-width="20"></span>
+            Create room
+          </button>
+
+          <a id="openLink"
+            class="minimal-btn w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 font-medium text-emerald-700 bg-emerald-50 border border-emerald-200"
+            href="#">
+            <span class="iconify" data-icon="solar:arrow-right-up-bold" data-width="20"></span>
+            Open room
+          </a>
+        </div>
+
+        <div id="result" class="mt-5 hidden">
+          <div class="text-xs uppercase tracking-wider text-slate-500 mb-2">Share URL</div>
+          <div class="flex flex-col sm:flex-row gap-3">
+            <input id="roomUrl" class="minimal-input w-full px-4 py-3 text-sm" readonly />
+            <button id="copyBtn"
+              class="minimal-btn inline-flex items-center justify-center gap-2 px-4 py-3 font-medium text-slate-700 bg-slate-100 border border-slate-200">
+              <span class="iconify" data-icon="solar:copy-bold" data-width="18"></span>
+              Copy
+            </button>
+          </div>
+          <div class="mt-3 text-xs text-slate-500">
+            Tip: share the URL with anyone on your network.
+          </div>
+        </div>
+
+        <div id="error"
+          class="mt-5 hidden rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const createBtn = document.getElementById('createBtn');
+    const result = document.getElementById('result');
+    const roomUrl = document.getElementById('roomUrl');
+    const copyBtn = document.getElementById('copyBtn');
+    const openLink = document.getElementById('openLink');
+    const error = document.getElementById('error');
+    const roomPasswordEl = document.getElementById('roomPassword');
+
+    function getApiBase() {
+      if (window.location.protocol === 'file:') {
+        return 'http://localhost:8090';
       }
+      return '';
+    }
 
-      function showError(msg) {
-        error.textContent = msg;
-        error.classList.remove('hidden');
+    function showError(msg) {
+      error.textContent = msg;
+      error.classList.remove('hidden');
+    }
+
+    createBtn.addEventListener('click', async () => {
+      error.classList.add('hidden');
+      result.classList.add('hidden');
+
+      try {
+        const apiBase = getApiBase();
+        const password = (roomPasswordEl?.value || '').trim();
+        const res = await fetch(`${apiBase}/api/rooms`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            password: password || null,
+          }),
+        });
+        if (!res.ok) throw new Error('Failed to create room');
+        const data = await res.json();
+
+        roomUrl.value = data.room_url;
+        openLink.href = data.room_url;
+        result.classList.remove('hidden');
+      } catch (e) {
+        showError(e?.message || 'Something went wrong');
       }
+    });
 
-      createBtn.addEventListener('click', async () => {
-        error.classList.add('hidden');
-        result.classList.add('hidden');
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(roomUrl.value);
+        copyBtn.textContent = 'Copied';
+        setTimeout(() => (copyBtn.textContent = 'Copy'), 1000);
+      } catch {
+        showError('Clipboard not available in this browser');
+      }
+    });
+  </script>
+</body>
 
-        try {
-          const apiBase = getApiBase();
-          const res = await fetch(`${apiBase}/api/rooms`, { method: 'POST' });
-          if (!res.ok) throw new Error('Failed to create room');
-          const data = await res.json();
-
-          roomUrl.value = data.room_url;
-          openLink.href = data.room_url;
-          result.classList.remove('hidden');
-        } catch (e) {
-          showError(e?.message || 'Something went wrong');
-        }
-      });
-
-      copyBtn.addEventListener('click', async () => {
-        try {
-          await navigator.clipboard.writeText(roomUrl.value);
-          copyBtn.textContent = 'Copied';
-          setTimeout(() => (copyBtn.textContent = 'Copy'), 1000);
-        } catch {
-          showError('Clipboard not available in this browser');
-        }
-      });
-    </script>
-  </body>
 </html>

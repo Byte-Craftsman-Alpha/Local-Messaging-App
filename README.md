@@ -213,6 +213,7 @@ This repository also includes a separate FastAPI + WebSocket based room chat app
 ### Features
 
 - Create a room and get a shareable URL
+- Optional room passwords (protected rooms)
 - Anyone opening the URL can send/receive messages
 - Messages are broadcast to all connected users in the room
 
@@ -226,4 +227,48 @@ Open:
 
 - `http://localhost:8090/`
 
-Create a room and share the generated room link.
+### Usage
+
+#### Create an open room
+
+- Open `http://localhost:8090/`
+- Leave **Optional password** empty
+- Click **Create room**
+- Share the generated room link
+
+#### Create a password-protected room
+
+- Open `http://localhost:8090/`
+- Set a value in **Optional password**
+- Click **Create room**
+- Share the generated room link
+
+When someone opens the room link, they will be prompted to enter the room password before they can chat.
+
+### API / Protocol
+
+#### REST
+
+- `POST /api/rooms`
+  - Body (JSON): `{ "password": "..." }` (optional; omit or set empty for open rooms)
+  - Response: `{ "room_id": "...", "room_url": "..." }`
+- `GET /api/rooms/{room_id}`
+  - Response: `{ "room_id": "...", "protected": true|false }`
+
+#### WebSocket
+
+- Connect to: `ws(s)://<host>/ws/{room_id}`
+- If the room is protected, the server will send:
+  - `{ "type": "auth_required" }`
+  - Client must respond with:
+    - `{ "type": "auth", "password": "..." }`
+  - On success, server sends:
+    - `{ "type": "auth_ok" }`
+  - On failure, server sends:
+    - `{ "type": "auth_error", "message": "..." }` and closes the socket
+
+After authentication succeeds, the client can send normal messages:
+
+- Chat message: `{ "type": "chat", "username": "...", "message": "..." }`
+- Presence update: `{ "type": "presence", "username": "..." }`
+- Typing indicator: `{ "type": "typing", "username": "...", "is_typing": true|false }`

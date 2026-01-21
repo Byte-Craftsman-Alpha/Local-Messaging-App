@@ -3,7 +3,7 @@ from __future__ import annotations
 import secrets
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,10 +35,26 @@ async def home(request: Request) -> HTMLResponse:
 
 @app.post("/api/rooms")
 async def create_room(request: Request) -> JSONResponse:
+    body: Dict[str, Any] = {}
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+
+    password = body.get("password") if isinstance(body, dict) else None
+    password = password if isinstance(password, str) else None
+
     room_id = secrets.token_urlsafe(8)
     await rooms.ensure_room(room_id)
+    await rooms.set_room_password(room_id, password)
     room_url = str(request.base_url).rstrip("/") + f"/room/{room_id}"
     return JSONResponse({"room_id": room_id, "room_url": room_url})
+
+
+@app.get("/api/rooms/{room_id}")
+async def get_room(room_id: str) -> JSONResponse:
+    protected = await rooms.is_room_protected(room_id)
+    return JSONResponse({"room_id": room_id, "protected": protected})
 
 
 @app.get("/room/{room_id}", response_class=HTMLResponse)
@@ -60,6 +76,57 @@ async def room_short(room_id: str) -> RedirectResponse:
 @app.websocket("/ws/{room_id}")
 async def ws_room(websocket: WebSocket, room_id: str) -> None:
     await rooms.connect(room_id, websocket)
+    is_authed = False
+
+    async def require_auth() -> bool:
+        nonlocal is_authed
+        protected = await rooms.is_room_protected(room_id)
+        if not protected:
+            is_authed = True
+            await websocket.send_json(
+                {"type": "auth_ok", "ts": datetime.now(timezone.utc).isoformat()}
+            )
+            return True
+
+        await websocket.send_json(
+            {"type": "auth_required", "ts": datetime.now(timezone.utc).isoformat()}
+        )
+        try:
+            data: Dict[str, Any] = await websocket.receive_json()
+        except Exception:
+            await websocket.close(code=1008)
+            return False
+
+        if data.get("type") != "auth":
+            await websocket.send_json(
+                {
+                    "type": "auth_error",
+                    "message": "Authentication required",
+                    "ts": datetime.now(timezone.utc).isoformat(),
+                }
+            )
+            await websocket.close(code=1008)
+            return False
+
+        password = data.get("password")
+        password = password if isinstance(password, str) else ""
+        ok = await rooms.verify_room_password(room_id, password)
+        if not ok:
+            await websocket.send_json(
+                {
+                    "type": "auth_error",
+                    "message": "Invalid room password",
+                    "ts": datetime.now(timezone.utc).isoformat(),
+                }
+            )
+            await websocket.close(code=1008)
+            return False
+
+        is_authed = True
+        await websocket.send_json(
+            {"type": "auth_ok", "ts": datetime.now(timezone.utc).isoformat()}
+        )
+        return True
 
     async def broadcast_presence() -> None:
         users = await rooms.get_online_users(room_id)
@@ -73,6 +140,10 @@ async def ws_room(websocket: WebSocket, room_id: str) -> None:
         )
 
     try:
+        authed = await require_auth()
+        if not authed:
+            return
+
         history = await rooms.get_history(room_id)
         for msg in history:
             await websocket.send_json(msg)
@@ -81,6 +152,9 @@ async def ws_room(websocket: WebSocket, room_id: str) -> None:
 
         while True:
             data: Dict[str, Any] = await websocket.receive_json()
+
+            if not is_authed:
+                continue
 
             msg_type = data.get("type")
             if msg_type == "presence":
