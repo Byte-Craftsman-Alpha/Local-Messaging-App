@@ -61,15 +61,51 @@ async def room_short(room_id: str) -> RedirectResponse:
 async def ws_room(websocket: WebSocket, room_id: str) -> None:
     await rooms.connect(room_id, websocket)
 
+    async def broadcast_presence() -> None:
+        users = await rooms.get_online_users(room_id)
+        await rooms.broadcast_ephemeral(
+            room_id,
+            {
+                "type": "presence",
+                "users": users,
+                "ts": datetime.now(timezone.utc).isoformat(),
+            },
+        )
+
     try:
         history = await rooms.get_history(room_id)
         for msg in history:
             await websocket.send_json(msg)
 
+        await broadcast_presence()
+
         while True:
             data: Dict[str, Any] = await websocket.receive_json()
 
             msg_type = data.get("type")
+            if msg_type == "presence":
+                username = (data.get("username") or "").strip()
+                if not username:
+                    continue
+                await rooms.set_username(room_id, websocket, username)
+                await broadcast_presence()
+                continue
+
+            if msg_type == "typing":
+                username = (data.get("username") or "").strip()
+                is_typing = bool(data.get("is_typing"))
+                if not username:
+                    continue
+
+                payload = {
+                    "type": "typing",
+                    "username": username,
+                    "is_typing": is_typing,
+                    "ts": datetime.now(timezone.utc).isoformat(),
+                }
+                await rooms.broadcast_ephemeral(room_id, payload)
+                continue
+
             if msg_type != "chat":
                 continue
 
@@ -88,8 +124,10 @@ async def ws_room(websocket: WebSocket, room_id: str) -> None:
 
     except WebSocketDisconnect:
         await rooms.disconnect(room_id, websocket)
+        await broadcast_presence()
     except Exception:
         await rooms.disconnect(room_id, websocket)
+        await broadcast_presence()
         try:
             await websocket.close()
         except Exception:
